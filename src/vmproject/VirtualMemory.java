@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
 
 /**
  *
@@ -21,8 +20,7 @@ public class VirtualMemory {
     private final int[] bitMap;
     private final int segTables = 0;
     private final int[] MASK;
-    private final HashMap<Integer, Integer> buffer;
-
+    private TLB buffer;
     public VirtualMemory(){
         pMem = new int[524288];
         bitMap = new int[32];
@@ -31,8 +29,7 @@ public class VirtualMemory {
         for(int i=30; i>=0; i--){
             MASK[i] = MASK[i+1] << 1;
         }
-        buffer = new HashMap<>();
-        
+        buffer = new TLB();
     }
     public void initST(String[] in){
         int seg, add;
@@ -72,6 +69,23 @@ public class VirtualMemory {
         }
         return result+address[2];
     }
+    public int readTLB(int va){
+        int sp = va >> 9;
+        int result = buffer.lookup(sp);
+        if(result==-1){
+            result = read(va);
+            if(result>0){
+                buffer.addNew(sp, result-(va%(int)(Math.pow(2,9))));
+                System.out.print("m ");
+            }
+            return result;
+        }
+        else{
+            System.out.print("h ");
+            return result + (va%(int)(Math.pow(2,9)));
+        }
+    }
+    
     public int write(int va){
         int[] address = translate(va);
         int result = 0;
@@ -93,9 +107,24 @@ public class VirtualMemory {
                     result = newPage;
                 }
             }
-            
         }
         return result+address[2];
+    }
+    public int writeTLB(int va){
+        int sp = va >> 9;
+        int result = buffer.lookup(sp);
+        if(result==-1){
+            result = write(va);
+            if(result>0){
+                buffer.addNew(sp, result-(va%(int)(Math.pow(2,9))));
+                System.out.print("m ");
+            }   
+            return result;
+        }
+        else{
+            System.out.print("h ");
+            return result + (va%(int)(Math.pow(2,9)));
+        }
     }
     private int createPT(){
         int emptyFrame = findFrame(1);
@@ -150,7 +179,7 @@ public class VirtualMemory {
         int mask = frameNo % 32;
         bitMap[bit] = bitMap[bit]|MASK[mask];
     }
-    public static void process(String[] va, VirtualMemory vm, boolean TLB){
+    public static void processNormal(String[] va, VirtualMemory vm){
         int result;
         for(int i=0; i<va.length; i+=2){
             if(Integer.parseInt(va[i])==0){
@@ -171,8 +200,28 @@ public class VirtualMemory {
             }
         }
     }
+    public static void processTLB(String[] va, VirtualMemory vm){
+        int result;
+        for(int i=0; i<va.length; i+=2){
+            if(Integer.parseInt(va[i])==0){
+                result = vm.readTLB(Integer.parseInt(va[i+1]));
+                if(result==-1)
+                    System.out.print("pf ");
+                else if(result==0)
+                    System.out.print("error ");
+                else
+                    System.out.print(result+" ");
+            }
+            else{
+                result = vm.writeTLB(Integer.parseInt(va[i+1]));
+                if(result==-1)
+                    System.out.print("pf ");
+                else
+                    System.out.print(result+" ");
+            }
+        }
+    }
     public static void main(String[] args) throws FileNotFoundException, IOException{
-        
         VirtualMemory vm = new VirtualMemory();
         BufferedReader brInit = new BufferedReader(new FileReader(new File("input1.txt")));
         String[] input = brInit.readLine().split(" ");
@@ -182,14 +231,12 @@ public class VirtualMemory {
         
         BufferedReader br = new BufferedReader(new FileReader(new File("input2.txt")));
         String[] va = br.readLine().split(" ");
-        process(va,vm,false);
-        /*
+        
         if(args[0].equals("tlb")){
-            process(va, vm, true);
+            processTLB(va, vm);
         }
         else{
-            process(va, vm, false);
+            processNormal(va, vm);
         }
-                */
     }
 }
