@@ -23,9 +23,9 @@ public class TLB {
             this.sp = sp;
         }
     }
-    HashMap<Integer, Block> cache;
-    Block[] priority;
-    int entry;
+    private HashMap<Integer, Block> cache;
+    private Block[] priority;
+    private int entry;
     public TLB(){
         entry = 0;
         cache = new HashMap<>();

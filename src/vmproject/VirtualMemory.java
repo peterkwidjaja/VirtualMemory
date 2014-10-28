@@ -18,7 +18,6 @@ import java.io.IOException;
 public class VirtualMemory {
     private final int[] pMem;
     private final int[] bitMap;
-    private final int segTables = 0;
     private final int[] MASK;
     private TLB buffer;
     public VirtualMemory(){
@@ -85,7 +84,7 @@ public class VirtualMemory {
             return result + (va%(int)(Math.pow(2,9)));
         }
     }
-    
+    //va translation for write command
     public int write(int va){
         int[] address = translate(va);
         int result = 0;
@@ -110,6 +109,7 @@ public class VirtualMemory {
         }
         return result+address[2];
     }
+    //va translation for write using TLB
     public int writeTLB(int va){
         int sp = va >> 9;
         int result = buffer.lookup(sp);
@@ -139,6 +139,7 @@ public class VirtualMemory {
         
         return emptyFrame*512;
     }
+
     private int createPage(){
         int emptyFrame = findFrame(1);
         if(emptyFrame==-1){
@@ -147,6 +148,7 @@ public class VirtualMemory {
         markBitmap(emptyFrame);
         return emptyFrame*512;
     }
+    //find empty frame starting from startFrame
     private int findFrame(int startFrame){
         boolean flag=true;
         int startBitmap = startFrame/32;
@@ -164,21 +166,29 @@ public class VirtualMemory {
         }
         return -1;
     }
+    
+    //return true if the following frame (indicated by bit and mask) is empty
     private boolean isEmpty(int bit, int mask){
         int test = bitMap[bit] & MASK[mask];
         return test==0;
     }
+    
+    //return true if bitmap shows the frame is empty
     private boolean isEmpty(int frameNo){
         int bit = frameNo/32;
         int mask = frameNo%32;
         int test = bitMap[bit] & MASK[mask];
         return test==0;
     }
+    
+    //mark bitmap to 1 for occupied frame
     private void markBitmap(int frameNo){
         int bit = frameNo/32;
-        int mask = frameNo % 32;
+        int mask = frameNo%32;
         bitMap[bit] = bitMap[bit]|MASK[mask];
     }
+    
+    //process va translation normally
     public static void processNormal(String[] va, VirtualMemory vm){
         int result;
         for(int i=0; i<va.length; i+=2){
@@ -200,6 +210,8 @@ public class VirtualMemory {
             }
         }
     }
+    
+    //process va translation using TLB
     public static void processTLB(String[] va, VirtualMemory vm){
         int result;
         for(int i=0; i<va.length; i+=2){
@@ -221,6 +233,7 @@ public class VirtualMemory {
             }
         }
     }
+    //main method
     public static void main(String[] args) throws FileNotFoundException, IOException{
         VirtualMemory vm = new VirtualMemory();
         BufferedReader brInit = new BufferedReader(new FileReader(new File("input1.txt")));
