@@ -32,10 +32,12 @@ public class VirtualMemory {
     }
     public void initST(String[] in){
         int seg, add;
+        markBitmap(0); //frame 0 as occupied
         for(int i=0; i<in.length; i+=2){
             seg = Integer.parseInt(in[i]);
             add = Integer.parseInt(in[i+1]);
             pMem[seg]=add;
+            markBitmap(add/512);
         }
     }
     public void initPT(String[] in){
@@ -45,6 +47,7 @@ public class VirtualMemory {
             seg = Integer.parseInt(in[i+1]);
             add = Integer.parseInt(in[i+2]);
             pMem[pMem[seg]+page] = add;
+            markBitmap(add/512);
         }
     }
     private int[] translate(int va){
@@ -197,7 +200,7 @@ public class VirtualMemory {
                 if(result==-1)
                     System.out.print("pf ");
                 else if(result==0)
-                    System.out.print("error ");
+                    System.out.print("err ");
                 else
                     System.out.print(result+" ");
             }
@@ -220,7 +223,7 @@ public class VirtualMemory {
                 if(result==-1)
                     System.out.print("pf ");
                 else if(result==0)
-                    System.out.print("error ");
+                    System.out.print("err ");
                 else
                     System.out.print(result+" ");
             }
@@ -245,7 +248,7 @@ public class VirtualMemory {
         BufferedReader br = new BufferedReader(new FileReader(new File("input2.txt")));
         String[] va = br.readLine().split(" ");
         
-        if(args[0].equals("tlb")){
+        if(args.length>0 && args[0].equals("tlb")){
             processTLB(va, vm);
         }
         else{
