@@ -38,6 +38,7 @@ public class VirtualMemory {
             add = Integer.parseInt(in[i+1]);
             pMem[seg]=add;
             markBitmap(add/512);
+            markBitmap((add/512)+1);
         }
     }
     public void initPT(String[] in){
