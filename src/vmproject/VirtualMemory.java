@@ -199,22 +199,23 @@ public class VirtualMemory {
             if(Integer.parseInt(va[i])==0){
                 result = vm.read(Integer.parseInt(va[i+1]));
                 if(result==-1)
-                    System.out.print("pf ");
+                    System.out.print("pf");
                 else if(result==0)
-                    System.out.print("err ");
+                    System.out.print("err");
                 else
-                    System.out.print(result+" ");
+                    System.out.print(result);
             }
             else{
                 result = vm.write(Integer.parseInt(va[i+1]));
                 if(result==-1)
-                    System.out.print("pf ");
+                    System.out.print("pf");
                 else
-                    System.out.print(result+" ");
+                    System.out.print(result);
             }
+            if(i!=va.length-2)
+                System.out.print(" ");
         }
     }
-    
     //process va translation using TLB
     public static void processTLB(String[] va, VirtualMemory vm){
         int result;
@@ -222,19 +223,21 @@ public class VirtualMemory {
             if(Integer.parseInt(va[i])==0){
                 result = vm.readTLB(Integer.parseInt(va[i+1]));
                 if(result==-1)
-                    System.out.print("pf ");
+                    System.out.print("pf");
                 else if(result==0)
-                    System.out.print("err ");
+                    System.out.print("err");
                 else
-                    System.out.print(result+" ");
+                    System.out.print(result);
             }
             else{
                 result = vm.writeTLB(Integer.parseInt(va[i+1]));
                 if(result==-1)
-                    System.out.print("pf ");
+                    System.out.print("pf");
                 else
-                    System.out.print(result+" ");
+                    System.out.print(result);
             }
+            if(i!=va.length-2)
+                System.out.print(" ");
         }
     }
     //main method
@@ -243,9 +246,11 @@ public class VirtualMemory {
         BufferedReader brInit = new BufferedReader(new FileReader(new File("input1.txt")));
         String[] input = brInit.readLine().split(" ");
         vm.initST(input);
-        input = brInit.readLine().split(" ");
-        vm.initPT(input);
-        
+        String test = brInit.readLine();
+        if(test!=null && !test.isEmpty()){
+            input = test.split(" ");
+            vm.initPT(input);
+        }
         BufferedReader br = new BufferedReader(new FileReader(new File("input2.txt")));
         String[] va = br.readLine().split(" ");
         
